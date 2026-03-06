@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alcohol Detection Dashboard</title>
+<style>
+:root{
+    --bg-deep:#07111b;
+    --bg-mid:#10283c;
+    --bg-glow:#1b5d76;
+    --panel:rgba(8, 19, 30, 0.78);
+    --panel-border:rgba(255,255,255,0.12);
+    --card-bg:rgba(255,255,255,0.06);
+    --text-main:#f4fbff;
+    --text-soft:#9db8c8;
+    --accent:#65e0cf;
+    --accent-warm:#ffd27a;
+    --shadow:0 24px 60px rgba(0,0,0,0.35);
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(101,224,207,0.18), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(255,210,122,0.16), transparent 26%),
+        linear-gradient(135deg,var(--bg-deep),var(--bg-mid) 55%,var(--bg-glow));
+    color:var(--text-main);
+    margin:0;
+    min-height:100vh;
+}
+
+.shell{
+    width:min(1200px, calc(100% - 32px));
+    margin:0 auto;
+    padding:28px 0 40px;
+}
+
+.hero{
+    position:relative;
+    overflow:hidden;
+    padding:32px;
+    border:1px solid var(--panel-border);
+    border-radius:28px;
+    background:var(--panel);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(18px);
+}
+
+.hero::after{
+    content:"";
+    position:absolute;
+    right:-70px;
+    bottom:-90px;
+    width:240px;
+    height:240px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(101,224,207,0.28), transparent 70%);
+    pointer-events:none;
+}
+
+.eyebrow{
+    display:inline-flex;
+    align-items:center;
+    padding:8px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.08);
+    color:var(--accent-warm);
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+}
+
+header{
+    margin:18px 0 12px;
+    font-size:clamp(2rem, 4vw, 3.4rem);
+    font-weight:800;
+    line-height:1.06;
+}
+
+.hero-copy{
+    max-width:760px;
+    margin:0;
+    color:var(--text-soft);
+    font-size:1rem;
+    line-height:1.75;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:20px;
+    padding-top:24px;
+}
+
+.card{
+    background:var(--panel);
+    color:var(--text-main);
+    border:1px solid var(--panel-border);
+    border-radius:24px;
+    padding:30px;
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(16px);
+}
+
+.card-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:20px;
+}
+
+.card h2{
+    margin:0 0 8px;
+    color:var(--text-main);
+    font-size:1.5rem;
+}
+
+.card p{
+    margin:0;
+    color:var(--text-soft);
+    line-height:1.7;
+    font-size:0.95rem;
+}
+
+.chip{
+    flex-shrink:0;
+    padding:10px 14px;
+    border-radius:16px;
+    background:linear-gradient(135deg, rgba(101,224,207,0.24), rgba(101,224,207,0.08));
+    color:var(--accent);
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+}
+
+.data{
+    font-size:1.08rem;
+    white-space: pre-wrap;
+    margin-top:10px;
+    padding:22px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:var(--card-bg);
+    line-height:1.8;
+    min-height:170px;
+}
+
+.status{
+    font-size:1.5rem;
+    font-weight:bold;
+    padding:14px 18px;
+    border-radius:18px;
+    text-align:center;
+    margin-top:18px;
+    color:white;
+    letter-spacing:0.08em;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+.safe{background:linear-gradient(135deg,#1faa67,#42d88c);}
+.warning{background:linear-gradient(135deg,#c69216,#f0c44d);}
+.danger{background:linear-gradient(135deg,#c43a32,#ef6258);}
+
+#mapContainer{
+    margin-top:10px;
+    min-height:420px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:var(--card-bg);
+    overflow:hidden;
+    display:block;
+}
+
+#mapContainer p{
+    display:grid;
+    place-items:center;
+    min-height:420px;
+    padding:24px;
+    text-align:center;
+}
+
+iframe{
+    border:none;
+    border-radius:20px;
+    margin-top:0;
+    display:block;
+}
+
+@media(max-width:900px){
+    .container{grid-template-columns:1fr;}
+    .hero,
+    .card{padding:22px;}
+}
+
+@media(max-width:640px){
+    .shell{
+        width:min(100% - 20px, 1200px);
+        padding:20px 0 28px;
+    }
+
+    .card-head{
+        flex-direction:column;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<section class="hero">
+    <div class="eyebrow">Live Safety Monitor</div>
+    <header>Alcohol Detection Monitoring System</header>
+    <p class="hero-copy">A cleaner operational view for monitoring live alert messages and location data from the connected device feed, without changing the underlying dashboard logic.</p>
+</section>
+
+<div class="container">
+<div class="card">
+    <div class="card-head">
+        <div>
+            <h2>Latest Device Alert</h2>
+            <p>Most recent payload received from the remote monitoring endpoint.</p>
+        </div>
+        <div class="chip">Alert Feed</div>
+    </div>
+    <div class="data" id="alertData">Loading...</div>
+    <div class="status" id="alertStatus"></div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <div>
+            <h2>Google Maps Location</h2>
+            <p>Map preview generated automatically when coordinate data is present in the response.</p>
+        </div>
+        <div class="chip">Geo View</div>
+    </div>
+    <div id="mapContainer">Loading map...</div>
+</div>
+</div>
+
+</div>
+
+<script>
+const phpUrl = "http://pastpapershub.cyizalandry.com/update.php"; // PHP hosting URL
+
+async function fetchData(){
+    try{
+        const res = await fetch(phpUrl);
+        const data = await res.text();
+
+        document.getElementById("alertData").textContent = data;
+
+        // Status detection
+        let status = "SAFE";
+        if(data.toUpperCase().includes("DANGER")) status="DANGER";
+        else if(data.toUpperCase().includes("WARNING")) status="WARNING";
+
+        const statusDiv = document.getElementById("alertStatus");
+        statusDiv.textContent = status;
+        statusDiv.className = "status " + status.toLowerCase();
+
+        // Map
+        const mapDiv = document.getElementById("mapContainer");
+        const match = data.match(/q=([0-9\.\-]+),([0-9\.\-]+)/);
+        if(match){
+            const lat = match[1];
+            const lon = match[2];
+            mapDiv.innerHTML = `<iframe width="100%" height="400" src="https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed"></iframe>`;
+        }else{
+            mapDiv.innerHTML = "<p>Location not available</p>";
+        }
+
+    }catch(err){
+        console.error(err);
+    }
+}
+
+// Initial fetch
+fetchData();
+
+// Refresh every 5 seconds
+setInterval(fetchData,5000);
+</script>
+
+</body>
+</html>
